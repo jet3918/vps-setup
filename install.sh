@@ -2,15 +2,16 @@
 
 # ==============================================================================
 # VPS 定制初始化脚本 (适用于 Debian & Ubuntu LTS)
-# 版本: 8.0.1 (语法修复版)
+# 版本: 8.0.2 (上海时区版)
 # ------------------------------------------------------------------------------
-# 修复: 解决 line 320 unexpected EOF 语法解析错误
-# 修改: 优化时间同步检测逻辑，移除易导致兼容性问题的多行判断写法
+# 修改: 默认时区强制设置为 Asia/Shanghai
+# 保留: 语法修复, 软件包定制, 移除 Swap/Fail2ban/Vim优化
 # ==============================================================================
 set -euo pipefail
 
 # --- 默认配置 ---
-TIMEZONE=$(timedatectl show --property=Timezone --value 2>/dev/null || echo "UTC")
+# [修改] 这里直接指定为上海时间
+TIMEZONE="Asia/Shanghai"
 INSTALL_PACKAGES="curl sudo wget htop unzip iptables nano iperf3 mtr iftop rsyslog"
 PRIMARY_DNS_V4="1.1.1.1"
 SECONDARY_DNS_V4="8.8.8.8"
@@ -234,7 +235,7 @@ usage() {
 ${YELLOW}用法: $0 [选项]${NC}
 ${BLUE}核心选项:${NC}
   --hostname <name>      设置主机名
-  --timezone <tz>        设置时区
+  --timezone <tz>        设置时区 (默认: Asia/Shanghai)
   --ip-dns <'主 备'>      设置IPv4 DNS
   --ip6-dns <'主 备'>     设置IPv6 DNS
 ${BLUE}BBR选项:${NC}
@@ -312,7 +313,6 @@ configure_hostname() {
     log "${BLUE}当前主机名: ${current_hostname}${NC}"
     local final_hostname="$current_hostname"
     if [[ -n "$NEW_HOSTNAME" ]]; then
-        # 修复可能的正则解析问题
         if [[ "$NEW_HOSTNAME" =~ ^[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?$ ]]; then
             hostnamectl set-hostname "$NEW_HOSTNAME" >> "$LOG_FILE" 2>&1
             final_hostname="$NEW_HOSTNAME"
@@ -361,8 +361,6 @@ configure_timezone() {
 configure_time_sync() {
     log "\n${YELLOW}=============== 4. 时间同步配置 ===============${NC}"
     
-    # [FIX] 修复了此处导致 line 320 报错的括号嵌套和换行问题
-    # 使用平铺的逻辑检查是否存在其他 NTP 服务
     local existing_ntp=false
     if systemctl is-active --quiet chrony 2>/dev/null; then existing_ntp=true; fi
     if systemctl is-active --quiet ntp 2>/dev/null; then existing_ntp=true; fi
