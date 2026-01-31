@@ -47,8 +47,13 @@ https://github.com/bin456789/reinstall
 
 
 一键 DD 脚本
-```
-curl -O https://raw.githubusercontent.com/bin456789/reinstall/main/reinstall.sh && bash reinstall.sh debian 版本 --ssh-port 端口 --password 密码
-```
 
+Debian
+```
+curl -O https://raw.githubusercontent.com/bin456789/reinstall/main/reinstall.sh && bash reinstall.sh debian 13 --ssh-port 端口 --password 密码
+```
+Ubuntu
+```
+curl -O https://raw.githubusercontent.com/bin456789/reinstall/main/reinstall.sh && bash reinstall.sh ubuntu 24.04 --ssh-port 端口 --password 密码
+```
 DD脚本的系统版本、 ssh 端口和 password 请自行修改
